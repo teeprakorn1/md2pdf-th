@@ -1,6 +1,6 @@
 {
   "name": "md2pdf-th",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "description": "Markdown to PDF library & CLI — Thai/English, dark theme, TOC, cover, merge, watch, NestJS module",
   "keywords": [
     "markdown",
@@ -13,7 +13,10 @@
     "batch",
     "nestjs",
     "puppeteer",
-    "pdf-lib"
+    "pdf-lib",
+    "template",
+    "watermark",
+    "docker"
   ],
   "homepage": "https://github.com/teeprakorn1/md2pdf-th#readme",
   "bugs": {
@@ -46,9 +49,13 @@
     "md2pdf.js",
     "lib/",
     "types/",
+    "templates/",
     "style.css",
     "style-dark.css",
     "md2pdf.bat",
+    "Dockerfile",
+    "action.yml",
+    "web-ui.html",
     "test/",
     "LICENSE",
     "README.md",
@@ -69,7 +76,10 @@
     "@nestjs/common": { "optional": true },
     "@nestjs/core": { "optional": true }
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.0"
+  },
   "dependencies": {
     "md-to-pdf": "^5.2.4",
     "pdf-lib": "^1.17.1",

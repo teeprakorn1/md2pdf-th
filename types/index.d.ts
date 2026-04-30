@@ -31,6 +31,12 @@ export interface Md2PdfOptions {
   noPageNumbers?: boolean;
   /** Language hint for font selection */
   lang?: "th" | "en";
+  /** Built-in template name (resume, report, invoice) */
+  template?: string;
+  /** Watermark text (diagonal, semi-transparent) */
+  watermark?: string;
+  /** Output filename pattern: {name}, {date}, {time}, {timestamp} */
+  outputFilename?: string;
 }
 
 export interface FrontmatterMeta {
@@ -74,6 +80,24 @@ export function stripFrontmatter(content: string): string;
 
 /** Add PDF metadata using pdf-lib */
 export function addPdfMetadata(pdfBytes: Buffer | Uint8Array, metadata: Record<string, string>): Promise<Uint8Array>;
+
+/** Add diagonal watermark text to PDF */
+export function addWatermark(pdfBytes: Buffer | Uint8Array, text: string): Promise<Uint8Array>;
+
+/** Detect ratio of Thai characters in content */
+export function detectThaiContent(content: string): number;
+
+/** Get appropriate font stack based on language and content */
+export function getFontStack(lang: "th" | "en", content: string, customFont?: string): string;
+
+/** Resolve output filename pattern ({name}, {date}, {time}, {timestamp}) */
+export function resolveOutputFilename(pattern: string, baseName: string): string;
+
+/** Convert cryptic errors to friendly messages */
+export function friendlyError(err: Error | { message: string }): string;
+
+/** marked library instance (for web server use) */
+export const marked: typeof import("marked");
 
 /** Library version (from package.json) */
 export const VERSION: string;

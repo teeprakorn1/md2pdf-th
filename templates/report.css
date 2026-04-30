@@ -1,0 +1,34 @@
+:root {
+  --bg: #ffffff;
+  --text: #1e293b;
+  --accent: #0f766e;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --highlight: #f0fdf4;
+}
+body {
+  font-family: 'Leelawadee', 'Tahoma', 'Segoe UI', 'Noto Sans Thai', sans-serif;
+  font-size: 13px; line-height: 1.7; color: var(--text);
+  max-width: 175mm;
+}
+h1 { font-size: 20px; font-weight: 700; color: var(--accent); border-bottom: 2px solid var(--accent); padding-bottom: 6px; margin-top: 24px; }
+h2 { font-size: 16px; font-weight: 700; color: var(--text); border-left: 4px solid var(--accent); padding-left: 10px; margin-top: 18px; }
+h3 { font-size: 14px; font-weight: 600; color: var(--muted); margin-top: 12px; }
+p { margin: 6px 0; }
+ul, ol { padding-left: 22px; margin: 4px 0; }
+li { margin-bottom: 3px; }
+table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+th { background: var(--accent); color: #fff; padding: 6px 8px; text-align: left; font-weight: 600; }
+td { padding: 5px 8px; border: 1px solid var(--border); }
+tr:nth-child(even) { background: var(--highlight); }
+blockquote { border-left: 4px solid var(--accent); margin: 10px 0; padding: 6px 14px; background: var(--highlight); color: var(--muted); }
+code { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; background: #f1f5f9; padding: 2px 4px; border-radius: 3px; }
+pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; }
+pre code { background: transparent; color: inherit; padding: 0; }
+a { color: var(--accent); text-decoration: none; }
+hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+img { max-width: 100%; height: auto; }
+.cover-page { text-align: center; padding-top: 160px; }
+.cover-page h1 { font-size: 26px; border: none; color: var(--accent); }
+.cover-page .cover-author { font-size: 15px; color: var(--muted); }
+.cover-page .cover-date { font-size: 13px; color: var(--muted); }

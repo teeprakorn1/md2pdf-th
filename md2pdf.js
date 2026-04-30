@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
-const { md2pdfTh, mergePdfBuffers, VERSION, PAGE_SIZES, sanitizeHtml, stripFrontmatter, parseFrontmatter, extractTitleFromContent, generateToc, generateCoverPage, escapeHtml } = require("./lib/md2pdf-core");
+const { md2pdfTh, mergePdfBuffers, VERSION, PAGE_SIZES, sanitizeHtml, stripFrontmatter, parseFrontmatter, extractTitleFromContent, generateToc, generateCoverPage, escapeHtml, marked } = require("./lib/md2pdf-core");
 
 const CONCURRENCY_LIMIT = 4;
 const DEFAULT_CSS_PATH = path.join(__dirname, "style.css");
@@ -17,7 +17,8 @@ const DARK_CSS_PATH = path.join(__dirname, "style-dark.css");
 function parseArgs(argv) {
   const args = { files: [], cssPath: null, outDir: null, noPageNumbers: false,
     theme: "light", toc: false, watch: false, merge: false, cover: false,
-    headerText: null, footerText: null, format: "A4", font: null, serve: false, servePort: 3000 };
+    headerText: null, footerText: null, format: "A4", font: null, serve: false, servePort: 3000,
+    template: null, watermark: null, outputFilename: null };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     switch (arg) {
@@ -35,6 +36,9 @@ function parseArgs(argv) {
       case "--footer": args.footerText = argv[++i]; if (!args.footerText || args.footerText.startsWith("-")) { console.error("Error: --footer requires a text argument"); args.error = true; args.footerText = null; } break;
       case "--format": args.format = argv[++i]; if (!PAGE_SIZES.includes(args.format)) { console.error(`Error: --format must be one of: ${PAGE_SIZES.join(", ")}`); args.error = true; } break;
       case "--font": args.font = argv[++i]; if (!args.font || args.font.startsWith("-")) { console.error("Error: --font requires a font name argument"); args.error = true; args.font = null; } break;
+      case "--template": args.template = argv[++i]; if (!args.template || args.template.startsWith("-")) { console.error("Error: --template requires a name argument"); args.error = true; args.template = null; } break;
+      case "--watermark": args.watermark = argv[++i]; if (!args.watermark || args.watermark.startsWith("-")) { console.error("Error: --watermark requires a text argument"); args.error = true; args.watermark = null; } break;
+      case "--output-filename": args.outputFilename = argv[++i]; if (!args.outputFilename || args.outputFilename.startsWith("-")) { console.error("Error: --output-filename requires a pattern argument"); args.error = true; args.outputFilename = null; } break;
       case "--serve": args.serve = true; break;
       case "--port": args.servePort = parseInt(argv[++i], 10); if (isNaN(args.servePort) || args.servePort < 1 || args.servePort > 65535) { console.error("Error: --port requires a valid port number (1-65535)"); args.error = true; } break;
       default: if (arg.startsWith("-")) { console.error(`Unknown option: ${arg}`); args.error = true; } else { args.files.push(arg); } break;
@@ -65,6 +69,9 @@ function buildCoreOptions(args, inputPath, outputPath) {
     font: args.font,
     noPageNumbers: args.noPageNumbers,
     lang: "th",
+    template: args.template,
+    watermark: args.watermark,
+    outputFilename: args.outputFilename,
   };
 }
 
@@ -116,7 +123,6 @@ function startServer(inputPath, args) {
   console.log(`   🔑 Auth token: ${authToken}`);
   console.log(`   ⚠️  Bind: 127.0.0.1 only — do not expose to public networks`);
   let lastHtml = "";
-  const { marked } = require("marked");
 
   // Per-IP rate limit with 60s window
   const ipRequests = new Map();
@@ -125,6 +131,10 @@ function startServer(inputPath, args) {
 
   function checkRateLimit(ip) {
     const now = Date.now();
+    // Purge entries older than window to prevent memory leak
+    if (ipRequests.size > 1000) {
+      for (const [key, val] of ipRequests) { if (now - val.windowStart > RATE_WINDOW_MS) ipRequests.delete(key); }
+    }
     const entry = ipRequests.get(ip) || { count: 0, windowStart: now };
     if (now - entry.windowStart > RATE_WINDOW_MS) { entry.count = 0; entry.windowStart = now; }
     entry.count++;
@@ -158,9 +168,13 @@ function startServer(inputPath, args) {
     const ip = req.socket.remoteAddress;
     if (!checkRateLimit(ip)) { res.writeHead(429, { "Content-Type": "text/plain" }); res.end("Rate limit exceeded"); return; }
 
-    const urlPath = req.url.split("?")[0];
+    const url = new URL(req.url, `http://localhost:${port}`);
+    const urlPath = url.pathname;
+    const queryToken = url.searchParams.get("token");
 
-    // Auth check — token in query param
+    // Auth check — token required for all routes
+    if (queryToken !== authToken) { res.writeHead(401, { "Content-Type": "text/plain" }); res.end("Unauthorized — pass ?token=<token>"); return; }
+
     if (urlPath === "/") {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       res.end(lastHtml || "<p>Loading...</p>");
@@ -181,7 +195,7 @@ function startServer(inputPath, args) {
     res.writeHead(404);
     res.end("Not found");
   });
-  convertToHtml().then(() => { server.listen(port, "127.0.0.1", () => { console.log(`   Ready! Open http://localhost:${port}`); }); });
+  convertToHtml().then(() => { server.listen(port, "127.0.0.1", () => { console.log(`   Ready! Open http://localhost:${port}/?token=${authToken}`); }); });
 }
 
 // ─── Output Path ─────────────────────────────────────────────────────────────
