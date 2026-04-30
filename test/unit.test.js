@@ -60,9 +60,9 @@ test("sanitizeHtml strips <iframe>", () => {
 
 // ─── escapeHtml ──────────────────────────────────────────────────────────────
 
-test("escapeHtml escapes & < > \" '", () => {
-  const result = escapeHtml('a&b<c>d"e\'f');
-  if (result !== "a&amp;b&lt;c&gt;d&quot;e&#39;f") throw new Error(`Wrong: ${result}`);
+test("escapeHtml escapes & < > \" ' /", () => {
+  const result = escapeHtml('a&b<c>d"e\'f/g');
+  if (result !== "a&amp;b&lt;c&gt;d&quot;e&#39;f&#x2F;g") throw new Error(`Wrong: ${result}`);
 });
 
 // ─── extractTitleFromContent ─────────────────────────────────────────────────
@@ -104,6 +104,19 @@ test("parseFrontmatter returns empty for no frontmatter", () => {
   if (meta.title !== "") throw new Error("Should be empty");
 });
 
+test("parseFrontmatter handles quoted values", () => {
+  const content = '---\ntitle: "My Title"\nauthor: \'John\'\n---\nContent';
+  const meta = parseFrontmatter(content);
+  if (meta.title !== "My Title") throw new Error(`title: ${meta.title}`);
+  if (meta.author !== "John") throw new Error(`author: ${meta.author}`);
+});
+
+test("parseFrontmatter handles block scalar |", () => {
+  const content = "---\ndescription: |\n  Line 1\n  Line 2\n---\nContent";
+  const meta = parseFrontmatter(content);
+  if (!meta.description.includes("Line 1")) throw new Error(`desc: ${meta.description}`);
+});
+
 // ─── stripFrontmatter ────────────────────────────────────────────────────────
 
 test("stripFrontmatter removes frontmatter", () => {
@@ -124,6 +137,12 @@ test("generateToc creates TOC from headings", () => {
 test("generateToc returns empty for no headings", () => {
   const toc = generateToc("Just some text\nNo headings");
   if (toc !== "") throw new Error("Should be empty");
+});
+
+test("generateToc deduplicates identical heading ids", () => {
+  const content = "## Intro\nSome text\n## Intro\nMore text";
+  const toc = generateToc(content);
+  if (!toc.includes("intro-1")) throw new Error("Duplicate id not deduplicated");
 });
 
 // ─── generateCoverPage ───────────────────────────────────────────────────────

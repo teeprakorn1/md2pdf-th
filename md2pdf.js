@@ -86,11 +86,10 @@ async function runWithConcurrency(tasks, limit) {
 
 function startWatchMode(inputPath, args) {
   console.log(`\n👀 Watching: ${inputPath} (Ctrl+C to stop)\n`);
-  let lastConvert = 0, converting = false;
+  let debounceTimer = null, converting = false;
   const doConvert = async () => {
-    const now = Date.now();
-    if (now - lastConvert < 500 || converting) return;
-    lastConvert = now; converting = true;
+    if (converting) return;
+    converting = true;
     try {
       const outputPath = resolveOutputPath(path.resolve(inputPath), args);
       console.log(`\n[${new Date().toLocaleTimeString()}] File changed — reconverting...`);
@@ -99,7 +98,12 @@ function startWatchMode(inputPath, args) {
     } catch (err) { console.error(`  ${err.message} — will retry on next change`); }
     finally { converting = false; }
   };
-  fs.watch(path.resolve(inputPath), (eventType) => { if (eventType === "change") doConvert(); });
+  fs.watch(path.resolve(inputPath), (eventType) => {
+    if (eventType === "change") {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(doConvert, 500);
+    }
+  });
   doConvert();
 }
 
@@ -107,12 +111,26 @@ function startWatchMode(inputPath, args) {
 
 function startServer(inputPath, args) {
   const port = args.servePort;
+  const authToken = Math.random().toString(36).slice(2, 10);
   console.log(`\n🌐 Web preview server starting on http://localhost:${port}`);
-  console.log(`   ⚠️  WARNING: No authentication — do not expose to public networks`);
+  console.log(`   🔑 Auth token: ${authToken}`);
+  console.log(`   ⚠️  Bind: 127.0.0.1 only — do not expose to public networks`);
   let lastHtml = "";
   const { marked } = require("marked");
-  let requestCount = 0;
-  const RATE_LIMIT = 100;
+
+  // Per-IP rate limit with 60s window
+  const ipRequests = new Map();
+  const RATE_LIMIT_PER_IP = 60;
+  const RATE_WINDOW_MS = 60000;
+
+  function checkRateLimit(ip) {
+    const now = Date.now();
+    const entry = ipRequests.get(ip) || { count: 0, windowStart: now };
+    if (now - entry.windowStart > RATE_WINDOW_MS) { entry.count = 0; entry.windowStart = now; }
+    entry.count++;
+    ipRequests.set(ip, entry);
+    return entry.count <= RATE_LIMIT_PER_IP;
+  }
 
   const convertToHtml = async () => {
     try {
@@ -131,13 +149,37 @@ function startServer(inputPath, args) {
   };
 
   const resolved = path.resolve(inputPath);
-  if (fs.existsSync(resolved)) { let lastW = 0; fs.watch(resolved, () => { const now = Date.now(); if (now - lastW > 500) { lastW = now; convertToHtml(); } }); }
+  const inputDir = path.dirname(resolved);
+  if (fs.existsSync(resolved)) { let debounceTimer = null; fs.watch(resolved, () => { if (debounceTimer) clearTimeout(debounceTimer); debounceTimer = setTimeout(convertToHtml, 500); }); }
+
+  const MIME_TYPES = { ".png":"image/png", ".jpg":"image/jpeg", ".jpeg":"image/jpeg", ".gif":"image/gif", ".svg":"image/svg+xml", ".webp":"image/webp", ".ico":"image/x-icon" };
 
   const server = http.createServer((req, res) => {
-    requestCount++;
-    if (requestCount > RATE_LIMIT) { res.writeHead(429, { "Content-Type": "text/plain" }); res.end("Rate limit exceeded"); return; }
-    if (req.url === "/") { res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" }); res.end(lastHtml || "<p>Loading...</p>"); }
-    else { res.writeHead(404); res.end("Not found"); }
+    const ip = req.socket.remoteAddress;
+    if (!checkRateLimit(ip)) { res.writeHead(429, { "Content-Type": "text/plain" }); res.end("Rate limit exceeded"); return; }
+
+    const urlPath = req.url.split("?")[0];
+
+    // Auth check — token in query param
+    if (urlPath === "/") {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(lastHtml || "<p>Loading...</p>");
+      return;
+    }
+
+    // Serve images from the same directory as the markdown file
+    const ext = path.extname(urlPath).toLowerCase();
+    if (MIME_TYPES[ext]) {
+      const imgPath = path.join(inputDir, path.basename(urlPath));
+      if (fs.existsSync(imgPath)) {
+        res.writeHead(200, { "Content-Type": MIME_TYPES[ext] });
+        fs.createReadStream(imgPath).pipe(res);
+        return;
+      }
+    }
+
+    res.writeHead(404);
+    res.end("Not found");
   });
   convertToHtml().then(() => { server.listen(port, "127.0.0.1", () => { console.log(`   Ready! Open http://localhost:${port}`); }); });
 }

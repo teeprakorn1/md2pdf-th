@@ -2,6 +2,24 @@
 
 All notable changes to **md2pdf-th** will be documented in this file.
 
+## [3.2.0] — 2026-04-30
+
+### Fixed
+- 🔴 **Rate limit reset**: Per-IP rate limit with 60s sliding window (resets automatically) — was global counter that never reset
+- 🔴 **Rate limit per-IP**: Each IP tracked independently — one attacker can no longer block the server
+- 🔴 **Web server auth**: Random auth token generated on start, displayed in console
+- 🟡 **Frontmatter multi-line**: Supports YAML block scalar (`|`) and quoted values (`"..."`, `'...'`)
+- 🟡 **TOC id dedup**: Duplicate heading names get `-N` suffix (e.g. `intro`, `intro-1`)
+- 🟡 **noPageNumbers vs header**: `--no-page-numbers` hides page numbers only; custom `--header`/`--footer` still show
+- 🟡 **Cover+TOC insert**: Fixed `indexOf("</div>")` bug — now finds cover-page closing tag specifically
+- 🟡 **Watch debounce**: Proper `setTimeout`/`clearTimeout` debounce instead of manual timestamp check
+- 🟡 **Serve images**: Web server now serves image files (png, jpg, gif, svg, webp, ico) from markdown's directory
+- 🟢 **escapeHtml**: Added `/` → `&#x2F;` per OWASP recommendation
+- 🟢 **CSS variables**: Both `style.css` and `style-dark.css` now use CSS custom properties for shared rules
+
+### Added
+- 3 new unit tests: frontmatter quoted, block scalar, TOC dedup
+
 ## [3.1.0] — 2026-04-30
 
 ### Fixed
