@@ -1,7 +1,7 @@
 {
   "name": "md2pdf-th",
-  "version": "2.0.0",
-  "description": "CLI tool to convert Markdown files to PDF — Thai/English support, dark theme, TOC, cover page, merge, watch mode, web preview",
+  "version": "3.0.0",
+  "description": "Markdown to PDF library & CLI — Thai/English, dark theme, TOC, cover, merge, watch, NestJS module",
   "keywords": [
     "markdown",
     "pdf",
@@ -10,7 +10,10 @@
     "cli",
     "converter",
     "pdf-generator",
-    "batch"
+    "batch",
+    "nestjs",
+    "puppeteer",
+    "pdf-lib"
   ],
   "homepage": "https://github.com/teeprakorn1/md2pdf-th#readme",
   "bugs": {
@@ -22,12 +25,19 @@
   },
   "license": "MIT",
   "author": "Teepakorn Kumvong",
-  "main": "md2pdf.js",
+  "main": "lib/md2pdf-core.js",
+  "exports": {
+    ".": "./lib/md2pdf-core.js",
+    "./cli": "./md2pdf.js",
+    "./nestjs": "./lib/nestjs/index.js",
+    "./nestjs/*": "./lib/nestjs/*.js"
+  },
   "bin": {
     "md2pdf-th": "md2pdf.js"
   },
   "files": [
     "md2pdf.js",
+    "lib/",
     "style.css",
     "style-dark.css",
     "md2pdf.bat",
@@ -40,6 +50,14 @@
     "test": "node test/md2pdf.test.js",
     "lint": "echo 'Lint check (optional: npm i -D eslint)'",
     "prepublishOnly": "npm test"
+  },
+  "peerDependencies": {
+    "@nestjs/common": ">=8.0.0",
+    "@nestjs/core": ">=8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nestjs/common": { "optional": true },
+    "@nestjs/core": { "optional": true }
   },
   "devDependencies": {
     "eslint": "^8.57.0"
