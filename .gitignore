@@ -1,6 +1,6 @@
 node_modules/
 *.pdf
-package-lock.json
+.npmrc
 
 # AG Kit
 .windsurf
