@@ -1,7 +1,7 @@
 {
   "name": "md2pdf-th",
-  "version": "1.0.1",
-  "description": "CLI tool to convert Markdown files to PDF — Thai/English support, page numbers, custom CSS, batch conversion",
+  "version": "2.0.0",
+  "description": "CLI tool to convert Markdown files to PDF — Thai/English support, dark theme, TOC, cover page, merge, watch mode, web preview",
   "keywords": [
     "markdown",
     "pdf",
@@ -29,6 +29,7 @@
   "files": [
     "md2pdf.js",
     "style.css",
+    "style-dark.css",
     "md2pdf.bat",
     "test/",
     "LICENSE",
@@ -44,7 +45,9 @@
     "eslint": "^8.57.0"
   },
   "dependencies": {
-    "md-to-pdf": "^5.2.4"
+    "md-to-pdf": "^5.2.4",
+    "pdf-lib": "^1.17.1",
+    "marked": "^15.0.0"
   },
   "engines": {
     "node": ">=16.0.0"
