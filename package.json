@@ -1,6 +1,6 @@
 {
   "name": "md2pdf-th",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool to convert Markdown files to PDF — Thai/English support, page numbers, custom CSS, batch conversion",
   "keywords": [
     "markdown",
@@ -24,7 +24,7 @@
   "author": "Teepakorn Kumvong",
   "main": "md2pdf.js",
   "bin": {
-    "md2pdf": "./md2pdf.js"
+    "md2pdf-th": "md2pdf.js"
   },
   "files": [
     "md2pdf.js",

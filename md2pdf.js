@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const { mdToPdf } = require("md-to-pdf");
 
-const VERSION = "1.0.0";
+const VERSION = "1.0.1";
 const CONCURRENCY_LIMIT = 4;
 const DEFAULT_CSS_PATH = path.join(__dirname, "style.css");
 const PAGE_HEADER_TEMPLATE = `
