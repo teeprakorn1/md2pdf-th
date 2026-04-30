@@ -199,7 +199,11 @@ async function convertFile(inputPath, options) {
         css,
         document_title: headerTitle,
         launch_options: {
-          args: ["--font-render-hinting=medium"],
+          args: [
+            "--font-render-hinting=medium",
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+          ],
         },
         pdf_options: {
           format: "A4",
