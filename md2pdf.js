@@ -6,8 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
-const { marked } = require("marked");
-const { md2pdfTh, mergePdfBuffers, VERSION, PAGE_SIZES } = require("./lib/md2pdf-core");
+const { md2pdfTh, mergePdfBuffers, VERSION, PAGE_SIZES, sanitizeHtml, stripFrontmatter, parseFrontmatter, extractTitleFromContent, generateToc, generateCoverPage, escapeHtml } = require("./lib/md2pdf-core");
 
 const CONCURRENCY_LIMIT = 4;
 const DEFAULT_CSS_PATH = path.join(__dirname, "style.css");
@@ -111,7 +110,9 @@ function startServer(inputPath, args) {
   console.log(`\n🌐 Web preview server starting on http://localhost:${port}`);
   console.log(`   ⚠️  WARNING: No authentication — do not expose to public networks`);
   let lastHtml = "";
-  const { sanitizeHtml, stripFrontmatter, parseFrontmatter, extractTitleFromContent, generateToc, generateCoverPage, escapeHtml } = require("./lib/md2pdf-core");
+  const { marked } = require("marked");
+  let requestCount = 0;
+  const RATE_LIMIT = 100;
 
   const convertToHtml = async () => {
     try {
@@ -133,6 +134,8 @@ function startServer(inputPath, args) {
   if (fs.existsSync(resolved)) { let lastW = 0; fs.watch(resolved, () => { const now = Date.now(); if (now - lastW > 500) { lastW = now; convertToHtml(); } }); }
 
   const server = http.createServer((req, res) => {
+    requestCount++;
+    if (requestCount > RATE_LIMIT) { res.writeHead(429, { "Content-Type": "text/plain" }); res.end("Rate limit exceeded"); return; }
     if (req.url === "/") { res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" }); res.end(lastHtml || "<p>Loading...</p>"); }
     else { res.writeHead(404); res.end("Not found"); }
   });

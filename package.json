@@ -26,10 +26,17 @@
   "license": "MIT",
   "author": "Teepakorn Kumvong",
   "main": "lib/md2pdf-core.js",
+  "types": "types/index.d.ts",
   "exports": {
-    ".": "./lib/md2pdf-core.js",
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./lib/md2pdf-core.js"
+    },
     "./cli": "./md2pdf.js",
-    "./nestjs": "./lib/nestjs/index.js",
+    "./nestjs": {
+      "types": "./types/nestjs.d.ts",
+      "default": "./lib/nestjs/index.js"
+    },
     "./nestjs/*": "./lib/nestjs/*.js"
   },
   "bin": {
@@ -38,6 +45,7 @@
   "files": [
     "md2pdf.js",
     "lib/",
+    "types/",
     "style.css",
     "style-dark.css",
     "md2pdf.bat",
@@ -47,8 +55,9 @@
   ],
   "scripts": {
     "start": "node md2pdf.js",
-    "test": "node test/md2pdf.test.js",
-    "lint": "echo 'Lint check (optional: npm i -D eslint)'",
+    "test": "node test/unit.test.js && node test/md2pdf.test.js",
+    "test:unit": "node test/unit.test.js",
+    "test:integration": "node test/md2pdf.test.js",
     "prepublishOnly": "npm test"
   },
   "peerDependencies": {
@@ -59,9 +68,7 @@
     "@nestjs/common": { "optional": true },
     "@nestjs/core": { "optional": true }
   },
-  "devDependencies": {
-    "eslint": "^8.57.0"
-  },
+  "devDependencies": {},
   "dependencies": {
     "md-to-pdf": "^5.2.4",
     "pdf-lib": "^1.17.1",
