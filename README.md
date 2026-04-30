@@ -186,6 +186,43 @@ Or via API:
 await md2pdfTh({ content: '# Hello', css: 'h1 { color: red; }' });
 ```
 
+## API Reference
+
+### `md2pdfTh(options)` → `Promise<Buffer>`
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `content` | `string` | — | Markdown content string (alternative to `inputPath`) |
+| `inputPath` | `string` | — | Path to .md file (alternative to `content`) |
+| `outputPath` | `string` | — | Output PDF path. If omitted, returns Buffer |
+| `css` | `string` | — | Custom CSS string |
+| `cssPath` | `string` | — | Path to custom CSS file |
+| `theme` | `'light'\|'dark'` | `'light'` | Color theme |
+| `toc` | `boolean` | `false` | Generate Table of Contents |
+| `cover` | `boolean` | `false` | Add cover page from frontmatter |
+| `headerText` | `string` | — | Custom header text |
+| `footerText` | `string` | — | Custom footer text |
+| `format` | `string` | `'A4'` | Page size: A3, A4, A5, Letter, Legal, Tabloid |
+| `font` | `string` | — | Custom font family |
+| `noPageNumbers` | `boolean` | `false` | Disable page numbers |
+| `lang` | `'th'\|'en'` | `'th'` | Language hint for font selection |
+
+### `mergePdfBuffers(buffers)` → `Promise<Buffer>`
+
+Merge multiple PDF buffers into one.
+
+### `sanitizeHtml(content)` → `string`
+
+Strip dangerous HTML (script, iframe, SVG, event handlers, etc.).
+
+### `parseFrontmatter(content)` → `FrontmatterMeta`
+
+Parse YAML frontmatter. Returns `{ title, author, date, tags, description, rawLength }`.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history.
+
 ## Requirements
 
 - Node.js >= 16.0.0

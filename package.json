@@ -1,6 +1,6 @@
 {
   "name": "md2pdf-th",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Markdown to PDF library & CLI — Thai/English, dark theme, TOC, cover, merge, watch, NestJS module",
   "keywords": [
     "markdown",
@@ -51,7 +51,8 @@
     "md2pdf.bat",
     "test/",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "start": "node md2pdf.js",
