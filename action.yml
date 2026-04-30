@@ -1,5 +1,9 @@
-name: 'md2pdf-th Action'
-description: 'Convert Markdown to PDF using md2pdf-th'
+name: 'md2pdf-th'
+description: 'Convert Markdown to PDF — Thai/English support, templates, watermark, TOC, cover page'
+author: 'Teepakorn Kumvong'
+branding:
+  icon: 'file-text'
+  color: 'blue'
 inputs:
   markdown-file:
     description: 'Path to markdown file'
@@ -12,23 +16,37 @@ inputs:
     required: false
     default: 'light'
   format:
-    description: 'Page size (A4, Letter, etc.)'
+    description: 'Page size (A4, Letter, A3, A5, Legal, Tabloid)'
     required: false
     default: 'A4'
   toc:
-    description: 'Generate Table of Contents'
+    description: 'Generate Table of Contents (true/false)'
     required: false
     default: 'false'
   cover:
-    description: 'Add cover page'
+    description: 'Add cover page from frontmatter (true/false)'
     required: false
     default: 'false'
   template:
     description: 'Built-in template (resume, report, invoice)'
     required: false
+    default: ''
   watermark:
-    description: 'Watermark text'
-    required: false'
+    description: 'Diagonal watermark text'
+    required: false
+    default: ''
+  header:
+    description: 'Custom header text'
+    required: false
+    default: ''
+  footer:
+    description: 'Custom footer text'
+    required: false
+    default: ''
+  font:
+    description: 'Custom font family'
+    required: false
+    default: ''
 runs:
   using: 'composite'
   steps:
@@ -45,6 +63,9 @@ runs:
         [ "${{ inputs.cover }}" = "true" ] && ARGS="$ARGS --cover"
         [ -n "${{ inputs.template }}" ] && ARGS="$ARGS --template ${{ inputs.template }}"
         [ -n "${{ inputs.watermark }}" ] && ARGS="$ARGS --watermark '${{ inputs.watermark }}'"
+        [ -n "${{ inputs.header }}" ] && ARGS="$ARGS --header '${{ inputs.header }}'"
+        [ -n "${{ inputs.footer }}" ] && ARGS="$ARGS --footer '${{ inputs.footer }}'"
+        [ -n "${{ inputs.font }}" ] && ARGS="$ARGS --font '${{ inputs.font }}'"
         if [ -n "${{ inputs.output-file }}" ]; then
           md2pdf-th $ARGS "${{ inputs.markdown-file }}" "${{ inputs.output-file }}"
         else

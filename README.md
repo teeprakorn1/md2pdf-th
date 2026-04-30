@@ -7,21 +7,26 @@
 
 ## Features
 
-- 🇹🇭 **Thai language support** — Leelawadee + system font fallback
+- 🇹🇭 **Thai language support** — Auto-detect Thai + mixed language, smart font fallback
 - 🌙 **Dark theme** — `--theme dark` for dark mode PDFs
-- 📋 **Table of Contents** — Auto-generated from headings
+- 📋 **Table of Contents** — Auto-generated from headings with dedup anchors
 - 🖼️ **Cover page** — From YAML frontmatter (title, author, date)
 - 📄 **Merge PDFs** — Combine multiple markdown files into one PDF
-- 👀 **Watch mode** — Auto-reconvert on file change
-- 🌐 **Web preview** — Live HTML preview server
+- 👀 **Watch mode** — Auto-reconvert on file change (debounced)
+- 🌐 **Web preview** — Live HTML preview server with auth token + image serving
 - 🔧 **Custom header/footer** — `--header` / `--footer` text
 - 📐 **Page sizes** — A3, A4, A5, Letter, Legal, Tabloid
 - 🔤 **Custom fonts** — `--font "Georgia"` or any installed font
-- 📦 **Batch conversion** — Parallel processing with concurrency limit
+- 🎨 **Templates** — `--template resume|report|invoice` — ready-made styles
+- � **Watermark** — `--watermark "CONFIDENTIAL"` diagonal text
+- �📦 **Batch conversion** — Parallel processing with concurrency limit
 - 🧹 **HTML sanitization** — XSS protection (script, iframe, SVG, event handlers)
-- 🏗️ **Library API** — Use as Node.js library, not just CLI
+- 🏗️ **Library API** — Use as Node.js library, returns Buffer
 - 🪺 **NestJS module** — `Md2PdfModule` with DI support
 - 📝 **TypeScript types** — Full `.d.ts` type definitions
+- 🐳 **Docker** — `Dockerfile` with Chromium + Thai fonts
+- ⚡ **GitHub Action** — Use in CI pipelines
+- 🌍 **Web UI** — Drag & drop .md → download PDF
 
 ## Quick Start
 
@@ -62,6 +67,9 @@ md2pdf-th [options] <file.md>
 | `--footer <text>` | Custom footer text |
 | `--format <size>` | Page size: A3, A4, A5, Letter, Legal, Tabloid |
 | `--font <name>` | Custom font family |
+| `--template <name>` | Built-in template: resume, report, invoice |
+| `--watermark <text>` | Diagonal watermark text |
+| `--output-filename <pattern>` | Output filename pattern: `{name}`, `{date}`, `{time}`, `{timestamp}` |
 | `--serve` | Start web preview server |
 | `--port <port>` | Server port (default: 3000) |
 | `--version, -v` | Show version |
@@ -94,6 +102,15 @@ md2pdf-th --watch doc.md
 # Web preview
 md2pdf-th --serve --port 8080 doc.md
 
+# Resume template
+md2pdf-th --template resume resume.md
+
+# Report with watermark
+md2pdf-th --template report --watermark "DRAFT" report.md
+
+# Custom output filename pattern
+md2pdf-th --output-filename "{name}-{date}" -o ./pdfs *.md
+
 # Batch convert
 md2pdf-th -o ./pdfs *.md
 ```
@@ -125,10 +142,12 @@ const pdfBuffer = await md2pdfTh({
   format: 'Letter',
   font: 'Georgia',
   lang: 'th',
+  template: 'report',
+  watermark: 'DRAFT',
 });
 ```
 
-### Frontmatter (for --cover)
+### Frontmatter (for --cover & options)
 
 ```yaml
 ---
@@ -137,10 +156,20 @@ author: John Doe
 date: 2024-01-01
 tags: report, quarterly
 description: Quarterly report
+theme: dark
+toc: true
+cover: true
+format: A4
+template: report
+watermark: DRAFT
+headerText: Company Name
+footerText: Confidential
 ---
 
 # Content starts here
 ```
+
+All frontmatter options: `title`, `author`, `date`, `tags`, `description`, `theme`, `toc`, `cover`, `format`, `template`, `watermark`, `headerText`, `footerText`, `noPageNumbers`, `font`, `lang`
 
 ## NestJS Integration
 
@@ -206,6 +235,9 @@ await md2pdfTh({ content: '# Hello', css: 'h1 { color: red; }' });
 | `font` | `string` | — | Custom font family |
 | `noPageNumbers` | `boolean` | `false` | Disable page numbers |
 | `lang` | `'th'\|'en'` | `'th'` | Language hint for font selection |
+| `template` | `string` | — | Built-in template: resume, report, invoice |
+| `watermark` | `string` | — | Diagonal watermark text |
+| `outputFilename` | `string` | — | Output filename pattern (`{name}`, `{date}`, `{time}`, `{timestamp}`) |
 
 ### `mergePdfBuffers(buffers)` → `Promise<Buffer>`
 
@@ -222,6 +254,42 @@ Parse YAML frontmatter. Returns `{ title, author, date, tags, description, rawLe
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
+
+## Docker
+
+```bash
+# Build
+docker build -t md2pdf-th .
+
+# Convert
+docker run --rm -v $(pwd):/data md2pdf-th /data/doc.md /data/output.pdf
+
+# With options
+docker run --rm -v $(pwd):/data md2pdf-th --template report --toc /data/doc.md
+```
+
+## GitHub Action
+
+Use in your CI pipeline:
+
+```yaml
+- uses: teeprakorn1/md2pdf-th@v4
+  with:
+    markdown-file: report.md
+    output-file: report.pdf
+    theme: dark
+    format: A4
+    toc: true
+    template: report
+    watermark: DRAFT
+```
+
+Or install via npm in your workflow:
+
+```yaml
+- run: npm install -g md2pdf-th
+- run: md2pdf-th --toc --cover report.md
+```
 
 ## Requirements
 

@@ -1,6 +1,6 @@
 {
   "name": "md2pdf-th",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Markdown to PDF library & CLI — Thai/English, dark theme, TOC, cover, merge, watch, NestJS module",
   "keywords": [
     "markdown",

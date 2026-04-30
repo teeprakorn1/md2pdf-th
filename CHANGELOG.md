@@ -2,6 +2,33 @@
 
 All notable changes to **md2pdf-th** will be documented in this file.
 
+## [4.0.0] — 2026-04-30
+
+### Breaking Changes
+- Core engine now uses **async file I/O** (`fs.promises`) — all `md2pdfTh()` calls remain async but internal reads are non-blocking
+- `marked` is now exported from core — CLI imports it from core instead of separate `require("marked")`
+
+### Fixed
+- 🔴 **Auth token enforced**: Web server now requires `?token=<token>` query param — was generated but never checked
+- 🔴 **Sync I/O → async**: `fs.readFileSync/writeFileSync/mkdirSync` replaced with `fs.promises` equivalents
+- 🔴 **marked import duplicate**: CLI now uses `marked` exported from core, no separate `require("marked")`
+- 🟡 **Rate limit memory leak**: `ipRequests` Map purges entries older than window when size > 1000
+- 🟡 **_parseFmValue regex hardening**: Key parameter escaped with `\\$&` + whitelisted via `FM_KEYS`
+- 🟡 **CSS 95% duplicate**: Both `style.css` and `style-dark.css` now use CSS custom properties (`--bg`, `--text`, etc.)
+
+### Added
+- 🔴 **Template system**: `--template resume|report|invoice` — built-in CSS templates in `templates/` directory
+- 🔴 **Auto-detect mixed language**: `detectThaiContent()` + `getFontStack()` — Thai fonts injected automatically when Thai characters detected, even with `lang: "en"`
+- 🔴 **Friendly error messages**: `friendlyError()` — Chrome not found, font missing, permission denied, etc. get actionable advice
+- 🟡 **--output-filename pattern**: `--output-filename "{name}-{date}"` supports `{name}`, `{date}`, `{time}`, `{timestamp}`
+- 🟡 **Frontmatter options**: Set `theme:`, `toc:`, `cover:`, `format:`, `template:`, `watermark:`, `headerText:`, `footerText:`, `noPageNumbers:`, `font:`, `lang:` in YAML frontmatter
+- 🟡 **Dockerfile**: `docker build .` → `docker run md2pdf-th doc.md` with Chromium + Thai fonts pre-installed
+- 🟡 **GitHub Action**: `action.yml` — use as `uses: teeprakorn1/md2pdf-th` in CI pipelines
+- 🟢 **--watermark**: Diagonal semi-transparent watermark text via `pdf-lib`
+- 🟢 **Web UI**: `web-ui.html` — standalone drag & drop .md → download PDF page
+- 🟢 **devDependencies**: Added `eslint` + `prettier`
+- New exports: `addWatermark`, `detectThaiContent`, `getFontStack`, `resolveOutputFilename`, `friendlyError`, `marked`
+
 ## [3.2.0] — 2026-04-30
 
 ### Fixed
