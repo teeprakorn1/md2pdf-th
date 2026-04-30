@@ -1,0 +1,52 @@
+{
+  "name": "md2pdf-th",
+  "version": "1.0.0",
+  "description": "CLI tool to convert Markdown files to PDF — Thai/English support, page numbers, custom CSS, batch conversion",
+  "keywords": [
+    "markdown",
+    "pdf",
+    "md-to-pdf",
+    "thai",
+    "cli",
+    "converter",
+    "pdf-generator",
+    "batch"
+  ],
+  "homepage": "https://github.com/teeprakorn1/md2pdf-th#readme",
+  "bugs": {
+    "url": "https://github.com/teeprakorn1/md2pdf-th/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teeprakorn1/md2pdf-th.git"
+  },
+  "license": "MIT",
+  "author": "Teepakorn Kumvong",
+  "main": "md2pdf.js",
+  "bin": {
+    "md2pdf": "./md2pdf.js"
+  },
+  "files": [
+    "md2pdf.js",
+    "style.css",
+    "md2pdf.bat",
+    "test/",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "start": "node md2pdf.js",
+    "test": "node test/md2pdf.test.js",
+    "lint": "echo 'Lint check (optional: npm i -D eslint)'",
+    "prepublishOnly": "npm test"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "dependencies": {
+    "md-to-pdf": "^5.2.4"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
