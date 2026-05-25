@@ -1,6 +1,6 @@
 {
   "name": "md2pdf-th",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Markdown to PDF library & CLI — Thai/English, dark theme, TOC, cover, merge, watch, NestJS module",
   "keywords": [
     "markdown",
@@ -26,7 +26,7 @@
     "type": "git",
     "url": "git+https://github.com/teeprakorn1/md2pdf-th.git"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Teepakorn Kumvong",
   "main": "lib/md2pdf-core.js",
   "types": "types/index.d.ts",
@@ -52,6 +52,7 @@
     "templates/",
     "style.css",
     "style-dark.css",
+    "style-base.css",
     "md2pdf.bat",
     "Dockerfile",
     "action.yml",
@@ -63,8 +64,9 @@
   ],
   "scripts": {
     "start": "node md2pdf.js",
-    "test": "node test/unit.test.js && node test/md2pdf.test.js",
+    "test": "node test/unit.test.js && node test/nestjs.test.js && node test/md2pdf.test.js",
     "test:unit": "node test/unit.test.js",
+    "test:nestjs": "node test/nestjs.test.js",
     "test:integration": "node test/md2pdf.test.js",
     "prepublishOnly": "npm test"
   },
@@ -83,7 +85,7 @@
   "dependencies": {
     "md-to-pdf": "^5.2.4",
     "pdf-lib": "^1.17.1",
-    "marked": "^15.0.0"
+    "marked": "~15.0.0"
   },
   "engines": {
     "node": ">=16.0.0"

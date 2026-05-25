@@ -55,19 +55,31 @@ runs:
       run: npm install -g md2pdf-th
     - name: Convert Markdown to PDF
       shell: bash
+      env:
+        INPUT_THEME: ${{ inputs.theme }}
+        INPUT_FORMAT: ${{ inputs.format }}
+        INPUT_TOC: ${{ inputs.toc }}
+        INPUT_COVER: ${{ inputs.cover }}
+        INPUT_TEMPLATE: ${{ inputs.template }}
+        INPUT_WATERMARK: ${{ inputs.watermark }}
+        INPUT_HEADER: ${{ inputs.header }}
+        INPUT_FOOTER: ${{ inputs.footer }}
+        INPUT_FONT: ${{ inputs.font }}
+        INPUT_MARKDOWN_FILE: ${{ inputs.markdown-file }}
+        INPUT_OUTPUT_FILE: ${{ inputs.output-file }}
       run: |
-        ARGS=""
-        [ "${{ inputs.theme }}" != "light" ] && ARGS="$ARGS --theme ${{ inputs.theme }}"
-        [ "${{ inputs.format }}" != "A4" ] && ARGS="$ARGS --format ${{ inputs.format }}"
-        [ "${{ inputs.toc }}" = "true" ] && ARGS="$ARGS --toc"
-        [ "${{ inputs.cover }}" = "true" ] && ARGS="$ARGS --cover"
-        [ -n "${{ inputs.template }}" ] && ARGS="$ARGS --template ${{ inputs.template }}"
-        [ -n "${{ inputs.watermark }}" ] && ARGS="$ARGS --watermark '${{ inputs.watermark }}'"
-        [ -n "${{ inputs.header }}" ] && ARGS="$ARGS --header '${{ inputs.header }}'"
-        [ -n "${{ inputs.footer }}" ] && ARGS="$ARGS --footer '${{ inputs.footer }}'"
-        [ -n "${{ inputs.font }}" ] && ARGS="$ARGS --font '${{ inputs.font }}'"
-        if [ -n "${{ inputs.output-file }}" ]; then
-          md2pdf-th $ARGS "${{ inputs.markdown-file }}" "${{ inputs.output-file }}"
+        ARGS=()
+        [ "$INPUT_THEME" != "light" ] && ARGS+=(--theme "$INPUT_THEME")
+        [ "$INPUT_FORMAT" != "A4" ] && ARGS+=(--format "$INPUT_FORMAT")
+        [ "$INPUT_TOC" = "true" ] && ARGS+=(--toc)
+        [ "$INPUT_COVER" = "true" ] && ARGS+=(--cover)
+        [ -n "$INPUT_TEMPLATE" ] && ARGS+=(--template "$INPUT_TEMPLATE")
+        [ -n "$INPUT_WATERMARK" ] && ARGS+=(--watermark "$INPUT_WATERMARK")
+        [ -n "$INPUT_HEADER" ] && ARGS+=(--header "$INPUT_HEADER")
+        [ -n "$INPUT_FOOTER" ] && ARGS+=(--footer "$INPUT_FOOTER")
+        [ -n "$INPUT_FONT" ] && ARGS+=(--font "$INPUT_FONT")
+        if [ -n "$INPUT_OUTPUT_FILE" ]; then
+          md2pdf-th "${ARGS[@]}" "$INPUT_MARKDOWN_FILE" "$INPUT_OUTPUT_FILE"
         else
-          md2pdf-th $ARGS "${{ inputs.markdown-file }}"
+          md2pdf-th "${ARGS[@]}" "$INPUT_MARKDOWN_FILE"
         fi

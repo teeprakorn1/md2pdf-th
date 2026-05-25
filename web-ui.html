@@ -2,6 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>md2pdf-th — Web UI</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -33,9 +34,9 @@ p.sub{color:#94a3b8;margin-bottom:20px;font-size:14px}
 </div>
 <div class="options">
   <label>Theme<select id="theme"><option value="light">Light</option><option value="dark">Dark</option></select></label>
-  <label>Format<select id="format"><option>A4</option><option>Letter</option><option>A3</option><option>A5</option><option>Legal</option></select></label>
+  <label>Format<select id="format"><option>A4</option><option>Letter</option><option>A3</option><option>A5</option><option>Legal</option><option>Tabloid</option></select></label>
   <label>Template<select id="template"><option value="">Default</option><option value="resume">Resume</option><option value="report">Report</option><option value="invoice">Invoice</option></select></label>
-  <label>TOC<input type="checkbox" id="toc"></label>
+  <label style="flex-direction:row;align-items:center;gap:6px">TOC<input type="checkbox" id="toc"></label>
 </div>
 <button class="btn" id="convertBtn" disabled>Convert to PDF</button>
 <div class="status" id="status"></div>
@@ -47,8 +48,8 @@ dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.a
 dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('dragover');handleFile(e.dataTransfer.files[0])});
 fileInput.addEventListener('change',e=>handleFile(e.target.files[0]));
-function handleFile(f){if(!f||!f.name.endsWith('.md')){status.textContent='Please drop a .md file';status.className='status error';return}fileName=f.name.replace('.md','');const r=new FileReader();r.onload=e=>{mdContent=e.target.result;convertBtn.disabled=false;status.textContent=`Loaded: ${f.name} (${(f.size/1024).toFixed(1)} KB)`;status.className='status'};r.readAsText(f)}
-convertBtn.addEventListener('click',async()=>{if(!mdContent)return;convertBtn.disabled=true;status.textContent='Converting...';status.className='status';try{const{md2pdfTh}=await import('./lib/md2pdf-core.js');const buf=await md2pdfTh({content:mdContent,theme:document.getElementById('theme').value,format:document.getElementById('format').value,template:document.getElementById('template').value||undefined,toc:document.getElementById('toc').checked});const blob=new Blob([buf],{type:'application/pdf'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName+'.pdf';a.click();URL.revokeObjectURL(a.href);status.textContent='✅ PDF downloaded!';status.className='status success'}catch(e){status.textContent='Error: '+e.message;status.className='status error'}finally{convertBtn.disabled=false}});
+function handleFile(f){if(!f||!(f.name.endsWith('.md')||f.type==='text/markdown'||f.type==='text/plain')){status.textContent='Please drop a .md file';status.className='status error';return}fileName=f.name.replace(/\.md$/,'');const r=new FileReader();r.onload=e=>{mdContent=e.target.result;convertBtn.disabled=false;status.textContent=`Loaded: ${f.name} (${(f.size/1024).toFixed(1)} KB)`;status.className='status'};fileInput.value='';r.readAsText(f)}
+convertBtn.addEventListener('click',async()=>{if(!mdContent)return;convertBtn.disabled=true;status.textContent='Converting...';status.className='status';try{const token=new URLSearchParams(location.search).get('token')||'';const opts={content:mdContent,theme:document.getElementById('theme').value,format:document.getElementById('format').value,template:document.getElementById('template').value||undefined,toc:document.getElementById('toc').checked};const res=await fetch('/api/convert?token='+encodeURIComponent(token),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(opts)});if(!res.ok)throw new Error(await res.text()||'Server error '+res.status);const blob=await res.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName+'.pdf';a.click();URL.revokeObjectURL(a.href);status.textContent='✅ PDF downloaded!';status.className='status success'}catch(e){status.textContent='⚠️ This Web UI requires a server backend. Use: md2pdf-th --serve doc.md then open the preview URL.';status.className='status error'}finally{convertBtn.disabled=false}});
 </script>
 </body>
 </html>
