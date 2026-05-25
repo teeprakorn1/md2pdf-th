@@ -28,6 +28,15 @@ md2pdf.bat, Dockerfile, action.yml, web-ui.html, test/, LICENSE, README.md, CHAN
 
 ## Docker
 
+### Docker Hub (pre-built image)
+
+Pull and run without building:
+
+```bash
+docker pull teeprakorn1/md2pdf-th:4.0.3
+docker run --rm -v $(pwd):/data teeprakorn1/md2pdf-th:4.0.3 /data/doc.md /data/output.pdf
+```
+
 ### Build
 
 ```bash

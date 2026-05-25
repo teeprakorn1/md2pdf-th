@@ -37,6 +37,18 @@ export interface Md2PdfOptions {
   watermark?: string;
   /** Output filename pattern: {name}, {date}, {time}, {timestamp} */
   outputFilename?: string;
+  /** Conversion timeout in milliseconds */
+  timeout?: number;
+}
+
+/** HTML-only conversion result (no Puppeteer) */
+export interface Md2HtmlResult {
+  html: string;
+  css: string;
+  title: string;
+  headerTitle: string;
+  frontmatter: FrontmatterMeta;
+  baseName: string;
 }
 
 /**
@@ -68,6 +80,12 @@ export interface FrontmatterMeta {
  * @returns PDF Buffer
  */
 export function md2pdfTh(options: Md2PdfOptions): Promise<Buffer>;
+
+/**
+ * Convert Markdown to HTML + CSS (no Puppeteer — lightweight)
+ * @returns HTML output with metadata
+ */
+export function md2html(options: Omit<Md2PdfOptions, "outputPath" | "watermark" | "outputFilename" | "timeout">): Promise<Md2HtmlResult>;
 
 /** Merge multiple PDF buffers into one */
 export function mergePdfBuffers(pdfBuffers: Buffer[]): Promise<Buffer>;

@@ -90,7 +90,7 @@ md2pdf-th/
 | File | Purpose | Exports |
 |------|---------|---------|
 | `md2pdf.js` | CLI entry point | `parseArgs`, `printUsage`, `buildCoreOptions`, `runWithConcurrency`, `startWatchMode`, `startServer`, `resolveOutputPath`, `checkRateLimit` |
-| `lib/md2pdf-core.js` | Core conversion engine | `md2pdfTh`, `sanitizeHtml`, `escapeHtml`, `extractTitleFromContent`, `generateToc`, `generateCoverPage`, `parseFrontmatter`, `stripFrontmatter`, `addPdfMetadata`, `mergePdfBuffers`, `friendlyError`, `resolveOutputFilename`, `detectThaiContent`, `getFontStack`, `marked` |
+| `lib/md2pdf-core.js` | Core conversion engine | `md2pdfTh`, `md2html`, `sanitizeHtml`, `escapeHtml`, `extractTitleFromContent`, `generateToc`, `generateCoverPage`, `parseFrontmatter`, `stripFrontmatter`, `addPdfMetadata`, `mergePdfBuffers`, `friendlyError`, `resolveOutputFilename`, `detectThaiContent`, `getFontStack`, `marked` |
 | `lib/nestjs/index.js` | NestJS re-export | `Md2PdfModule`, `Md2PdfService` |
 | `lib/nestjs/md2pdf.module.js` | NestJS DI module | `Md2PdfModule` (with `forRoot`, `forRootAsync`) |
 | `lib/nestjs/md2pdf.service.js` | NestJS service wrapper | `Md2PdfService` (with `convert`, `convertFromContent`, `convertFromFile`, `convertToFile`, `merge`, `getVersion`) |
@@ -102,6 +102,7 @@ md2pdf-th/
 | Function | Signature | Description |
 |----------|-----------|-------------|
 | `md2pdfTh` | `(options) → Promise<Buffer>` | Main conversion — accepts all options, returns PDF buffer |
+| `md2html` | `(options) → Promise<Md2HtmlResult>` | Lightweight HTML export — no Puppeteer, returns `{html, css, title, ...}` |
 | `sanitizeHtml` | `(html) → string` | Strip dangerous HTML (XSS protection) |
 | `escapeHtml` | `(text) → string` | Escape HTML entities including `/` (OWASP) |
 | `extractTitleFromContent` | `(content, maxLen, fallback) → string` | Extract first `# heading` as title |

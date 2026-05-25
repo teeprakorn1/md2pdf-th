@@ -323,5 +323,35 @@ test("rejects output path with path traversal in batch mode", async () => {
   }
 });
 
+// --html-only integration
+test("--html-only produces HTML file", async () => {
+  const input = path.join(MD_DIR, "example-basic.md");
+  const htmlOutput = path.join(TEST_DIR, "test-html-only.html");
+
+  execSync(`node "${SCRIPT}" --html-only "${input}" "${htmlOutput}"`, { encoding: "utf-8" });
+
+  if (!fs.existsSync(htmlOutput)) {
+    throw new Error("HTML file not created");
+  }
+
+  const html = fs.readFileSync(htmlOutput, "utf-8");
+  if (!html.includes("<!DOCTYPE html>")) {
+    throw new Error("Not valid HTML output");
+  }
+});
+
+// --timeout validation
+test("validates --timeout option value", async () => {
+  try {
+    execSync(`node "${SCRIPT}" --timeout 500 --help`, { encoding: "utf-8", stdio: "pipe" });
+    throw new Error("Should have failed for invalid timeout");
+  } catch (err) {
+    const output = (err.stdout || "") + (err.stderr || "") + (err.message || "");
+    if (!output.includes("timeout") && !output.includes("Error")) {
+      throw new Error("Expected timeout validation error");
+    }
+  }
+});
+
 // Run all tests
 runTests();

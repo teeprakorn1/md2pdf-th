@@ -17,4 +17,7 @@ COPY package*.json ./
 RUN npm install --production
 COPY . .
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "console.log('ok')" || exit 1
+
 ENTRYPOINT ["node", "md2pdf.js"]

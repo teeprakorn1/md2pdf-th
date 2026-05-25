@@ -7,7 +7,7 @@ const fs = require("fs");
 const path = require("path");
 const http = require("http");
 const crypto = require("crypto");
-const { md2pdfTh, mergePdfBuffers, VERSION, PAGE_SIZES, sanitizeHtml, stripFrontmatter, parseFrontmatter, extractTitleFromContent, generateToc, generateCoverPage, escapeHtml, marked } = require("./lib/md2pdf-core");
+const { md2pdfTh, md2html, mergePdfBuffers, VERSION, PAGE_SIZES, sanitizeHtml, stripFrontmatter, parseFrontmatter, extractTitleFromContent, generateToc, generateCoverPage, escapeHtml, marked } = require("./lib/md2pdf-core");
 
 const CONCURRENCY_LIMIT = 4;
 const DEFAULT_CSS_PATH = path.join(__dirname, "style.css");
@@ -23,7 +23,8 @@ function parseArgs(argv) {
   const args = { files: [], cssPath: null, outDir: null, noPageNumbers: false,
     theme: "light", toc: false, watch: false, merge: false, cover: false,
     headerText: null, footerText: null, format: "A4", font: null, serve: false, servePort: 3000,
-    template: null, watermark: null, outputFilename: null, lang: "th" };
+    template: null, watermark: null, outputFilename: null, lang: "th",
+    htmlOnly: false, timeout: null };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     switch (arg) {
@@ -47,6 +48,8 @@ function parseArgs(argv) {
       case "--output-filename": args.outputFilename = argv[++i]; if (args.outputFilename === undefined) { console.error("Error: --output-filename requires a pattern argument"); args.error = true; args.outputFilename = null; } break;
       case "--concurrency": args.concurrencyLimit = parseInt(argv[++i], 10); if (isNaN(args.concurrencyLimit) || args.concurrencyLimit < 1 || args.concurrencyLimit > 32) { console.error("Error: --concurrency must be 1-32"); args.error = true; } break;
       case "--serve": args.serve = true; break;
+      case "--html-only": args.htmlOnly = true; break;
+      case "--timeout": args.timeout = parseInt(argv[++i], 10); if (isNaN(args.timeout) || args.timeout < 1000) { console.error("Error: --timeout must be at least 1000 ms"); args.error = true; } break;
       case "--port": args.servePort = parseInt(argv[++i], 10); if (isNaN(args.servePort) || args.servePort < 1 || args.servePort > 65535) { console.error("Error: --port requires a valid port number (1-65535)"); args.error = true; } break;
       default: if (arg.startsWith("-")) { console.error(`Unknown option: ${arg}`); args.error = true; } else { args.files.push(arg); } break;
     }
@@ -54,7 +57,7 @@ function parseArgs(argv) {
   /**
    * Handle output file specification
    */
-  const nonMd = args.files.findIndex(f => !f.endsWith(".md") && f.endsWith(".pdf"));
+  const nonMd = args.files.findIndex(f => !f.endsWith(".md") && (f.endsWith(".pdf") || (args.htmlOnly && f.endsWith(".html"))));
   if (nonMd !== -1 && args.files.length >= 2) {
     if (args.files[nonMd].includes("..")) { console.error("Error: Output file contains path traversal (..)"); args.error = true; }
     else { args.outputPath = path.resolve(args.files[nonMd]); args.files.splice(nonMd, 1); }
@@ -66,7 +69,7 @@ function parseArgs(argv) {
  * Print usage information
  */
 function printUsage() {
-  console.log(`\n  md2pdf v${VERSION} — Markdown to PDF Converter (Thai/English)\n  ============================================================\n\n  Usage:\n    md2pdf-th <file.md> [output.pdf]\n    md2pdf-th <file1.md> <file2.md> ...          (batch convert)\n    md2pdf-th [options] <file.md>\n\n  Options:\n    --css <path>           Custom CSS file path\n    --outdir, -o <dir>     Output directory\n    --no-page-numbers      Disable page numbers\n    --theme <light|dark>   Color theme (default: light)\n    --toc                  Generate Table of Contents\n    --watch                Watch mode — reconvert on file change\n    --merge                Merge multiple PDFs into one\n    --cover                Add cover page from frontmatter\n    --header <text>        Custom header text\n    --footer <text>        Custom footer text\n    --format <size>        Page size: A3, A4, A5, Letter, Legal, Tabloid\n    --font <name>          Custom font family\n    --lang <th|en>         Language hint for font selection (default: th)\n    --template <name>      Built-in template: resume, report, invoice\n    --watermark <text>     Diagonal watermark text\n    --output-filename <pat> Output filename pattern: {name}, {date}, {time}, {timestamp}\n    --concurrency <n>      Batch concurrency limit 1-32 (default: 4)\n    --serve                Start web preview server\n    --port <port>          Server port (default: 3000)\n    --version, -v          Show version\n    --help, -h             Show this help\n\n  Library API:\n    const { md2pdfTh } = require('md2pdf-th');\n    const pdfBuffer = await md2pdfTh({ content: '# Hello' });\n  `);
+  console.log(`\n  md2pdf v${VERSION} — Markdown to PDF Converter (Thai/English)\n  ============================================================\n\n  Usage:\n    md2pdf-th <file.md> [output.pdf]\n    md2pdf-th <file1.md> <file2.md> ...          (batch convert)\n    md2pdf-th [options] <file.md>\n\n  Options:\n    --css <path>           Custom CSS file path\n    --outdir, -o <dir>     Output directory\n    --no-page-numbers      Disable page numbers\n    --theme <light|dark>   Color theme (default: light)\n    --toc                  Generate Table of Contents\n    --watch                Watch mode — reconvert on file change\n    --merge                Merge multiple PDFs into one\n    --cover                Add cover page from frontmatter\n    --header <text>        Custom header text\n    --footer <text>        Custom footer text\n    --format <size>        Page size: A3, A4, A5, Letter, Legal, Tabloid\n    --font <name>          Custom font family\n    --lang <th|en>         Language hint for font selection (default: th)\n    --template <name>      Built-in template: resume, report, invoice\n    --watermark <text>     Diagonal watermark text\n    --output-filename <pat> Output filename pattern: {name}, {date}, {time}, {timestamp}\n    --concurrency <n>      Batch concurrency limit 1-32 (default: 4)\n    --serve                Start web preview server\n    --port <port>          Server port (default: 3000)\n    --html-only            Export HTML instead of PDF (lightweight, no Puppeteer)\n    --timeout <ms>         Conversion timeout in milliseconds (default: 60000)\n    --version, -v          Show version\n    --help, -h             Show this help\n\n  Library API:\n    const { md2pdfTh } = require('md2pdf-th');\n    const pdfBuffer = await md2pdfTh({ content: '# Hello' });\n  `);
 }
 
 /**
@@ -300,6 +303,37 @@ async function main() {
   if (args.watch && args.merge) console.warn("Warning: --merge is ignored in watch mode");
   // --serve + multiple files
   if (args.serve && args.files.length > 1) console.warn(`Warning: --serve uses only the first file, ignoring ${args.files.length - 1} others`);
+
+  if (args.htmlOnly) {
+    const inputPath = args.files[0];
+    // Check for user-provided output path (e.g., doc.md output.html)
+    let htmlPath;
+    if (args.outputPath) {
+      htmlPath = args.outputPath.replace(/\.pdf$/, '.html');
+    } else {
+      const baseName = path.basename(inputPath, '.md');
+      const outDir = args.outDir ? path.resolve(args.outDir) : path.dirname(path.resolve(inputPath));
+      htmlPath = path.join(outDir, baseName + '.html');
+    }
+    const outDir = path.dirname(htmlPath);
+    try {
+      const { html } = await md2html({
+        inputPath, cssPath: args.cssPath, theme: args.theme,
+        toc: args.toc, cover: args.cover,
+        headerText: args.headerText, footerText: args.footerText,
+        font: args.font, noPageNumbers: args.noPageNumbers,
+        lang: args.lang, template: args.template,
+      });
+      if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+      fs.writeFileSync(htmlPath, html, 'utf-8');
+      console.log('HTML:       ' + path.basename(htmlPath));
+      console.log('  Done! → ' + htmlPath);
+    } catch (err) {
+      console.error('  Error: ' + err.message);
+      process.exit(1);
+    }
+    return;
+  }
 
   if (args.serve) { startServer(args.files[0], args); return; }
   if (args.watch) { startWatchMode(args.files[0], args); return; }

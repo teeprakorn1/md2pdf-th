@@ -9,6 +9,7 @@ const {
   generateToc, generateCoverPage, parseFrontmatter,
   stripFrontmatter, resolveOutputFilename, friendlyError, VERSION, PAGE_SIZES,
   detectThaiContent, getFontStack, addPdfMetadata, addWatermark,
+  md2html,
 } = require("../lib/md2pdf-core");
 const { PDFDocument } = require("pdf-lib");
 const path = require("path");
@@ -399,6 +400,57 @@ test("CLI --css without value shows error", () => {
     throw new Error("Should have exited with error");
   } catch (err) {
     if (!err.stderr || !err.stderr.includes("Error:")) throw new Error("Missing error for --css without value");
+  }
+});
+
+// md2html — lightweight HTML export (no Puppeteer)
+test("md2html returns HTML string without Puppeteer", async () => {
+  const result = await md2html({ content: "# Hello\n\nWorld" });
+  if (!result.html) throw new Error("Missing html");
+  if (!result.html.includes("<body>")) throw new Error("Not valid HTML");
+  if (!result.html.includes("Hello")) throw new Error("Content missing");
+  if (typeof result.css !== "string") throw new Error("Missing css");
+  if (result.title !== "Hello") throw new Error(`Wrong title: ${result.title}`);
+});
+
+test("md2html includes frontmatter metadata", async () => {
+  const result = await md2html({ content: "---\ntitle: My Doc\nauthor: John\n---\n\n# Hello" });
+  if (result.frontmatter.title !== "My Doc") throw new Error("Frontmatter not parsed");
+  if (result.frontmatter.author !== "John") throw new Error("Author not parsed");
+});
+
+test("md2html applies theme CSS", async () => {
+  const dark = await md2html({ content: "# Test", theme: "dark" });
+  const light = await md2html({ content: "# Test", theme: "light" });
+  if (!dark.html.includes("html")) throw new Error("Missing HTML tag");
+  if (!light.html.includes("html")) throw new Error("Missing HTML tag");
+});
+
+// CLI --html-only
+test("CLI --html-only produces HTML file", () => {
+  const { execSync } = require("child_process");
+  const fs = require("fs");
+  const testMd = path.join(__dirname, "..", "md", "example-basic.md");
+  const htmlOutput = path.join(__dirname, "..", "md", "example-basic.html");
+  try {
+    fs.unlinkSync(htmlOutput);
+  } catch { /* ignore */ }
+  execSync(`node md2pdf.js --html-only "${testMd}"`, { encoding: "utf-8", cwd: path.join(__dirname, "..") });
+  if (!fs.existsSync(htmlOutput)) throw new Error("HTML file not created");
+  const html = fs.readFileSync(htmlOutput, "utf-8");
+  if (!html.includes("<!DOCTYPE html>")) throw new Error("Not valid HTML");
+  fs.unlinkSync(htmlOutput);
+});
+
+// CLI --timeout
+test("CLI --timeout rejects invalid value", () => {
+  const { execSync } = require("child_process");
+  try {
+    execSync('node md2pdf.js --timeout 500 --help', { encoding: "utf-8", cwd: path.join(__dirname, ".."), stdio: "pipe" });
+    throw new Error("Should have failed");
+  } catch (err) {
+    const output = (err.stdout || "") + (err.stderr || "") + (err.message || "");
+    if (!output.includes("timeout") && !output.includes("Error")) throw new Error("Expected timeout error");
   }
 });
 

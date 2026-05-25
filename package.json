@@ -1,6 +1,6 @@
 {
   "name": "md2pdf-th",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Markdown to PDF library & CLI — Thai/English, dark theme, TOC, cover, merge, watch, NestJS module",
   "keywords": [
     "markdown",
@@ -68,6 +68,8 @@
     "test:unit": "node test/unit.test.js",
     "test:nestjs": "node test/nestjs.test.js",
     "test:integration": "node test/md2pdf.test.js",
+    "test:coverage": "npx c8 --reporter=text --reporter=html node test/unit.test.js",
+    "test:coverage:all": "npx c8 --reporter=text --reporter=html node test/unit.test.js && node test/nestjs.test.js && node test/md2pdf.test.js",
     "prepublishOnly": "npm test"
   },
   "peerDependencies": {
@@ -79,6 +81,7 @@
     "@nestjs/core": { "optional": true }
   },
   "devDependencies": {
+    "c8": "^9.1.0",
     "eslint": "^8.57.0",
     "prettier": "^3.2.0"
   },

@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [4.0.3] - 2026-05-25
+
+> **New features:** HTML-only lightweight mode, timeout, Puppeteer memory optimization · **5 new tests** · **c8 coverage** · Documentation improvements
+
+### Added
+
+- **`md2html()`** — Lightweight HTML export without Puppeteer (`lib/md2pdf-core.js`)
+- **`--html-only` CLI flag** — Export HTML instead of PDF, zero memory overhead (`md2pdf.js`)
+- **`--timeout <ms>` CLI flag** — Conversion timeout with Promise.race (`md2pdf.js`, `lib/md2pdf-core.js`)
+- **Puppeteer `--disable-dev-shm-usage`** — Prevents /dev/shm exhaustion in Docker (`lib/md2pdf-core.js`)
+- **Dockerfile `HEALTHCHECK`** — Container health monitoring (`Dockerfile`)
+- **c8 coverage reporting** — `npm run test:coverage` and `npm run test:coverage:all` (`package.json`)
+- **CI coverage artifact upload** — Coverage report uploaded as GitHub Actions artifact (`.github/workflows/ci.yml`)
+- **5 new tests** — md2html (3), --html-only CLI (1), --timeout validation (1)
+
+### Changed
+
+- **README** — Added "Installation Options" section with lightweight install, Docker, CI tips
+- **DEPLOY.md** — Added Docker Hub pre-built image section
+
+---
+
 ## [4.0.2] - 2026-05-25
 
 > **55 bug fixes** (8 Critical · 9 High · 19 Medium · 19 Low) · **44 regression tests** · CSS architecture rewrite · JSDoc documentation

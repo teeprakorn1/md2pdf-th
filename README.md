@@ -122,6 +122,44 @@ docker run --rm -v $(pwd):/data md2pdf-th /data/doc.md /data/output.pdf
 
 ---
 
+## Installation Options
+
+### Lightweight install (skip Chromium download)
+
+If you already have Chromium/Chrome on your system:
+
+```bash
+# Skip Puppeteer's Chromium download (~150MB saved)
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install -g md2pdf-th
+
+# Point to system Chrome
+export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+md2pdf-th doc.md
+```
+
+| Platform | System Chrome Path |
+|----------|-------------------|
+| Linux (Debian/Ubuntu) | `/usr/bin/chromium` or `/usr/bin/chromium-browser` |
+| macOS | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` |
+| Windows | `C:\Program Files\Google\Chrome\Application\chrome.exe` |
+
+### Docker (no install needed)
+
+```bash
+# Build once, reuse
+# docker build -t md2pdf-th .
+docker run --rm -v $(pwd):/data md2pdf-th /data/doc.md /data/output.pdf
+```
+
+### CI environments
+
+```bash
+# CI environments need --no-sandbox (auto-detected via CI=true env)
+CI=true md2pdf-th doc.md
+```
+
+---
+
 ## Why md2pdf-th?
 
 ### The problem
@@ -171,6 +209,8 @@ md2pdf-th [options] <file.md>
 | `--concurrency <n>` | Batch concurrency limit 1-32 (default: 4) |
 | `--serve` | Start web preview server |
 | `--port <port>` | Server port (default: 3000) |
+| `--html-only` | Export HTML instead of PDF (lightweight, no Puppeteer) |
+| `--timeout <ms>` | Conversion timeout in milliseconds (default: 60000) |
 | `--version, -v` | Show version |
 | `--help, -h` | Show help |
 
