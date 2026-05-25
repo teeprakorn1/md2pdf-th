@@ -39,6 +39,9 @@ export interface Md2PdfOptions {
   outputFilename?: string;
 }
 
+/**
+ * Frontmatter metadata extracted from markdown
+ */
 export interface FrontmatterMeta {
   title: string;
   author: string;
@@ -46,6 +49,18 @@ export interface FrontmatterMeta {
   tags: string[];
   description: string;
   rawLength: number;
+  theme: string;
+  toc: boolean;
+  cover: boolean;
+  format: string;
+  headerText: string;
+  footerText: string;
+  noPageNumbers: boolean;
+  font: string;
+  lang: string;
+  template: string;
+  watermark: string;
+  _explicitKeys: Set<string>;
 }
 
 /**
@@ -78,8 +93,20 @@ export function parseFrontmatter(content: string): FrontmatterMeta;
 /** Strip YAML frontmatter from markdown */
 export function stripFrontmatter(content: string): string;
 
+
+/**
+ * PDF metadata structure
+ */
+export interface PdfMetadata {
+  Title?: string;
+  Author?: string;
+  Subject?: string;
+  Keywords?: string;
+  Creator?: string;
+}
+
 /** Add PDF metadata using pdf-lib */
-export function addPdfMetadata(pdfBytes: Buffer | Uint8Array, metadata: Record<string, string>): Promise<Uint8Array>;
+export function addPdfMetadata(pdfBytes: Buffer | Uint8Array, metadata: PdfMetadata): Promise<Uint8Array>;
 
 /** Add diagonal watermark text to PDF */
 export function addWatermark(pdfBytes: Buffer | Uint8Array, text: string): Promise<Uint8Array>;
@@ -94,7 +121,7 @@ export function getFontStack(lang: "th" | "en", content: string, customFont?: st
 export function resolveOutputFilename(pattern: string, baseName: string): string;
 
 /** Convert cryptic errors to friendly messages */
-export function friendlyError(err: Error | { message: string }): string;
+export function friendlyError(err: unknown): string;
 
 /** marked library instance (for web server use) */
 export const marked: typeof import("marked");

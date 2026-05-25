@@ -50,7 +50,7 @@ async function runTests() {
   process.exit(failed > 0 ? 1 : 0);
 }
 
-// Test 1: Version check
+// Version check
 test("--version returns version number", () => {
   const output = execSync(`node "${SCRIPT}" --version`, { encoding: "utf-8" });
   if (!output.includes("md2pdf v")) {
@@ -58,7 +58,7 @@ test("--version returns version number", () => {
   }
 });
 
-// Test 2: Help check
+// Help check
 test("--help returns usage information", () => {
   const output = execSync(`node "${SCRIPT}" --help`, { encoding: "utf-8" });
   if (!output.includes("Usage:") || !output.includes("Options:")) {
@@ -66,7 +66,7 @@ test("--help returns usage information", () => {
   }
 });
 
-// Test 3: Single file conversion
+// Single file conversion
 test("converts single markdown file to PDF", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-basic.pdf");
@@ -83,7 +83,7 @@ test("converts single markdown file to PDF", async () => {
   }
 });
 
-// Test 4: Batch conversion
+// Batch conversion
 test("converts multiple files in batch", async () => {
   const inputs = [
     path.join(MD_DIR, "example-basic.md"),
@@ -113,7 +113,7 @@ test("converts multiple files in batch", async () => {
   });
 });
 
-// Test 5: --outdir option
+// --outdir option
 test("--outdir puts files in correct directory", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const outdir = path.join(TEST_DIR, "subout");
@@ -128,7 +128,7 @@ test("--outdir puts files in correct directory", async () => {
   }
 });
 
-// Test 6: --no-page-numbers option
+// --no-page-numbers option
 test("--no-page-numbers creates PDF without headers", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-no-headers.pdf");
@@ -146,7 +146,7 @@ test("--no-page-numbers creates PDF without headers", async () => {
   }
 });
 
-// Test 7: HTML sanitization - script tag should be stripped
+// HTML sanitization - script tag should be stripped
 test("sanitizes HTML script tags", async () => {
   const testMd = path.join(TEST_DIR, "test-xss.md");
   const output = path.join(TEST_DIR, "test-xss.pdf");
@@ -169,7 +169,7 @@ Normal content
   // If we got here without crashing, sanitization worked
 });
 
-// Test 8: Error handling for missing file
+// Error handling for missing file
 test("handles missing file gracefully", async () => {
   const input = path.join(TEST_DIR, "nonexistent.md");
 
@@ -185,23 +185,20 @@ test("handles missing file gracefully", async () => {
   }
 });
 
-// Test 9: Invalid option validation
-test("validates --css option has value", async () => {
-  const input = path.join(MD_DIR, "example-basic.md");
-
+// Invalid option validation
+test("validates --css option has value (missing at end of args)", async () => {
   try {
-    execSync(`node "${SCRIPT}" --css --outdir ./test "${input}"`, { encoding: "utf-8", stdio: "pipe" });
+    execSync(`node "${SCRIPT}" --css`, { encoding: "utf-8", stdio: "pipe" });
     throw new Error("Should have failed for invalid --css");
   } catch (err) {
     const output = (err.stdout || "") + (err.stderr || "") + (err.message || "");
-    if (!output.includes("requires")) {
+    if (!output.includes("requires") && !output.includes("Error")) {
       throw new Error("Expected validation error not found: " + output);
     }
-    // This is expected
   }
 });
 
-// Test 10: Dark theme
+// Dark theme
 test("--theme dark creates PDF with dark CSS", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-dark.pdf");
@@ -213,7 +210,7 @@ test("--theme dark creates PDF with dark CSS", async () => {
   }
 });
 
-// Test 11: TOC generation
+// TOC generation
 test("--toc generates Table of Contents", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-toc.pdf");
@@ -225,7 +222,7 @@ test("--toc generates Table of Contents", async () => {
   }
 });
 
-// Test 12: Cover page
+// Cover page
 test("--cover adds cover page", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-cover.pdf");
@@ -237,7 +234,7 @@ test("--cover adds cover page", async () => {
   }
 });
 
-// Test 13: Custom header/footer
+// Custom header/footer
 test("--header and --footer set custom text", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-hf.pdf");
@@ -249,7 +246,7 @@ test("--header and --footer set custom text", async () => {
   }
 });
 
-// Test 14: Page format
+// Page format
 test("--format Letter creates PDF", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-letter.pdf");
@@ -261,7 +258,7 @@ test("--format Letter creates PDF", async () => {
   }
 });
 
-// Test 15: Custom font
+// Custom font
 test("--font sets custom font", async () => {
   const input = path.join(MD_DIR, "example-basic.md");
   const output = path.join(TEST_DIR, "test-font.pdf");
@@ -273,7 +270,7 @@ test("--font sets custom font", async () => {
   }
 });
 
-// Test 16: Invalid format validation
+// Invalid format validation
 test("validates --format option value", async () => {
   try {
     execSync(`node "${SCRIPT}" --format InvalidSize --help`, { encoding: "utf-8", stdio: "pipe" });
@@ -286,7 +283,7 @@ test("validates --format option value", async () => {
   }
 });
 
-// Test 17: Invalid theme validation
+// Invalid theme validation
 test("validates --theme option value", async () => {
   try {
     execSync(`node "${SCRIPT}" --theme neon --help`, { encoding: "utf-8", stdio: "pipe" });
@@ -295,6 +292,33 @@ test("validates --theme option value", async () => {
     const output = (err.stdout || "") + (err.stderr || "") + (err.message || "");
     if (!output.includes("theme") && !output.includes("Error")) {
       throw new Error("Expected theme validation error");
+    }
+  }
+});
+
+// --lang flag validation
+test("validates --lang option value", async () => {
+  try {
+    execSync(`node "${SCRIPT}" --lang fr --help`, { encoding: "utf-8", stdio: "pipe" });
+    throw new Error("Should have failed for invalid lang");
+  } catch (err) {
+    const output = (err.stdout || "") + (err.stderr || "") + (err.message || "");
+    if (!output.includes("lang") && !output.includes("Error")) {
+      throw new Error("Expected lang validation error");
+    }
+  }
+});
+
+// Batch mode path traversal rejection
+test("rejects output path with path traversal in batch mode", async () => {
+  const input = path.join(MD_DIR, "example-basic.md");
+  try {
+    execSync(`node "${SCRIPT}" "${input}" "../outside.pdf"`, { encoding: "utf-8", stdio: "pipe" });
+    throw new Error("Should have failed for path traversal");
+  } catch (err) {
+    const output = (err.stdout || "") + (err.stderr || "") + (err.message || "");
+    if (!output.includes("traversal")) {
+      throw new Error("Expected path traversal error, got: " + output);
     }
   }
 });

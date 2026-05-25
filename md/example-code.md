@@ -1,10 +1,10 @@
-# 💻 ตัวอย่างเอกสาร — Code & Technical
+# ตัวอย่างเอกสาร — Code & Technical
 
 > **ทดสอบ:** Code blocks, bar charts, technical content
 
 ---
 
-## Code Block — JavaScript
+## Code block — JavaScript
 
 ```javascript
 const express = require('express');
@@ -19,7 +19,7 @@ app.listen(3000, () => {
 });
 ```
 
-## Code Block — Python
+## Code block — Python
 
 ```python
 import tensorflow as tf
@@ -34,7 +34,7 @@ model = keras.Sequential([
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy')
 ```
 
-## Code Block — Bash
+## Code block — Bash
 
 ```bash
 # Install and convert
@@ -45,7 +45,7 @@ md2pdf --css dark.css doc.md -o ./output
 
 ---
 
-## Bar Chart (ASCII)
+## Bar chart (ASCII)
 
 ```
 ทักษะปัจจุบัน:                    ทักษะที่ขาด:
@@ -58,7 +58,7 @@ md2pdf --css dark.css doc.md -o ./output
 
 ---
 
-## Skill Rating
+## Skill rating
 
 ```
 Web Development:        ████████░░  8.5/10
@@ -75,7 +75,7 @@ System Design:          █████████░  9.5/10
 
 ---
 
-## Inline Code + Technical Terms
+## Inline code + technical terms
 
 - Environment variable: `NODE_ENV=production`
 - API endpoint: `https://api.example.com/v1/users`
